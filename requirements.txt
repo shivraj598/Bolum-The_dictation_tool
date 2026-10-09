@@ -1,0 +1,6 @@
+mlx>=0.32
+mlx-audio>=0.5
+huggingface_hub>=0.24
+sounddevice>=0.4
+numpy>=1.24
+scipy>=1.10
