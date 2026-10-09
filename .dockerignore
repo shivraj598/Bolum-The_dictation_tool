@@ -1,0 +1,38 @@
+# Rust
+target/
+Cargo.lock
+
+# Python
+venv/
+__pycache__/
+*.pyc
+parakeet-tdt-0.6b-v3/
+
+# macOS app bundles
+dist/
+target/release/*.app
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Models (downloaded at runtime)
+models/
+*.bin
+
+# Logs
+*.log
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
