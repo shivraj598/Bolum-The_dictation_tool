@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  bolum:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bolum
+    # Audio device access for recording
+    devices:
+      - /dev/snd:/dev/snd
+    # For PulseAudio (if available)
+    environment:
+      - PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native
+    volumes:
+      # Persist downloaded models
+      - bolum_models:/home/bolum/.local/share/bolum/models
+      # PulseAudio socket (Linux host)
+      - ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native
+    # Run as current user for audio permissions
+    user: "${UID}:${GID}"
+    # Keep container running for interactive use
+    stdin_open: true
+    tty: true
+    # Default command
+    command: --help
+
+  # Alternative: Run with host audio (simpler but less isolated)
+  bolum-host-audio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bolum-host
+    network_mode: host
+    ipc: host
+    pid: host
+    environment:
+      - PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native
+    volumes:
+      - bolum_models:/home/bolum/.local/share/bolum/models
+      - ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native
+      - /dev/snd:/dev/snd
+    user: "${UID}:${GID}"
+    stdin_open: true
+    tty: true
+    command: --help
+
+volumes:
+  bolum_models:
+    driver: local
