@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::{SampleFormat, StreamConfig};
-use std::sync::{Arc, Mutex};
+use cpal::StreamConfig;
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::mpsc;
 use tracing::{debug, info, warn};
@@ -27,7 +27,7 @@ impl AudioRecorder {
         transcriber: &Transcriber,
     ) -> Result<String> {
         let (tx, mut rx) = mpsc::channel::<Vec<f32>>(100);
-        let transcriber = Arc::new(transcriber.clone());
+        let transcriber = Arc::new(transcriber);
         let tx_clone = tx.clone();
 
         let host = cpal::default_host();
@@ -76,7 +76,7 @@ impl AudioRecorder {
 
     pub async fn record_continuous(&self, transcriber: &Transcriber) -> Result<String> {
         let (tx, mut rx) = mpsc::channel::<Vec<f32>>(100);
-        let transcriber = Arc::new(transcriber.clone());
+        let transcriber = Arc::new(transcriber);
 
         let host = cpal::default_host();
         let device = host

@@ -2,7 +2,6 @@ use anyhow::{Context, Result};
 use std::path::Path;
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
-#[derive(Clone)]
 pub struct Transcriber {
     ctx: WhisperContext,
     language: String,
@@ -29,20 +28,19 @@ impl Transcriber {
         params.set_print_progress(false);
         params.set_print_realtime(false);
         params.set_print_timestamps(false);
+        params.set_no_timestamps(true);
 
-        state
-            .full(params, audio)
-            .context("Failed to run transcription")?;
+        state.full(params, audio).context("Failed to run transcription")?;
 
-        let num_segments = state
-            .full_n_segments()
-            .context("Failed to get segment count")?;
+        let num_segments = state.full_n_segments() as usize;
 
         let mut transcript = String::new();
         for i in 0..num_segments {
-            if let Ok(text) = state.full_get_segment_text(i) {
-                transcript.push_str(&text);
-                transcript.push(' ');
+            if let Some(segment) = state.get_segment(i as i32) {
+                if let Ok(text) = segment.to_str() {
+                    transcript.push_str(text);
+                    transcript.push(' ');
+                }
             }
         }
 

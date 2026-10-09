@@ -22,7 +22,7 @@ impl ModelManager {
             .join("bolum")
             .join("models");
 
-        fs::create_dir_all(&models_dir).await?;
+        std::fs::create_dir_all(&models_dir)?;
         Ok(Self { models_dir })
     }
 
@@ -59,13 +59,8 @@ impl ModelManager {
         let response = client.get(url).send().await?.error_for_status()?;
 
         let mut file = fs::File::create(path).await?;
-        let mut stream = response.bytes_stream();
-
-        use futures_util::StreamExt;
-        while let Some(chunk) = stream.next().await {
-            let chunk = chunk?;
-            tokio::io::AsyncWriteExt::write_all(&mut file, &chunk).await?;
-        }
+        let bytes = response.bytes().await?;
+        tokio::io::AsyncWriteExt::write_all(&mut file, &bytes).await?;
 
         tracing::info!("Model downloaded to: {}", path.display());
         Ok(())
