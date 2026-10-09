@@ -20,14 +20,18 @@ from pynput import keyboard
 MODEL_PATH = "parakeet-tdt-0.6b-v3"
 SAMPLE_RATE = 16000
 # Default: Option + Space (left or right option)
-TRIGGER_KEYS = {keyboard.Key.alt, keyboard.Key.space}  
+# Use frozenset of acceptable combinations
+TRIGGER_COMBOS = [
+    {keyboard.Key.alt, keyboard.Key.space},      # Left Option + Space
+    {keyboard.Key.alt_r, keyboard.Key.space},    # Right Option + Space
+]  
 TOGGLE_MODE = True  # True = press combo once to start, press again to stop
 # ===================================
 
 class PushToTalkDictation:
-    def __init__(self, model, trigger_keys=TRIGGER_KEYS, toggle_mode=TOGGLE_MODE):
+    def __init__(self, model, trigger_combos=None, toggle_mode=TOGGLE_MODE):
         self.model = model
-        self.trigger_keys = set(trigger_keys)
+        self.trigger_combos = trigger_combos or TRIGGER_COMBOS
         self.toggle_mode = toggle_mode
         
         self.recording = False
@@ -116,17 +120,22 @@ class PushToTalkDictation:
     
     def get_keys_name(self):
         """Get human-readable key combination name."""
+        # Show first combo as example
+        combo = self.trigger_combos[0]
         names = []
-        for k in self.trigger_keys:
+        for k in combo:
             if hasattr(k, 'name'):
                 names.append(k.name.upper())
             else:
                 names.append(str(k).upper())
-        return " + ".join(names)
+        return " + ".join(names) + " (or Right Option + Space)"
     
     def check_trigger(self):
-        """Check if all trigger keys are currently pressed."""
-        return self.trigger_keys.issubset(self.pressed_keys)
+        """Check if any trigger combination is currently pressed."""
+        for combo in self.trigger_combos:
+            if combo.issubset(self.pressed_keys):
+                return True
+        return False
     
     def on_press(self, key):
         """Handle key press."""
@@ -253,14 +262,24 @@ def main():
         print("Combine with + : alt+space, ctrl+shift+space, etc.")
         return
     
-    trigger_keys = parse_key_combo(args.key)
-    if not trigger_keys:
-        trigger_keys = TRIGGER_KEYS
+    # Parse user-specified key combo
+    user_keys = parse_key_combo(args.key)
+    if user_keys:
+        # Use user's combo + also accept right option variant
+        trigger_combos = [user_keys]
+        # If user used alt, also add alt_r variant
+        if keyboard.Key.alt in user_keys:
+            alt_r_combo = set(user_keys)
+            alt_r_combo.discard(keyboard.Key.alt)
+            alt_r_combo.add(keyboard.Key.alt_r)
+            trigger_combos.append(alt_r_combo)
+    else:
+        trigger_combos = TRIGGER_COMBOS
     
     toggle_mode = not args.hold
     
     model = load_model()
-    app = PushToTalkDictation(model, trigger_keys, toggle_mode)
+    app = PushToTalkDictation(model, trigger_combos, toggle_mode)
     app.run()
 
 if __name__ == "__main__":
