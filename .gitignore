@@ -16,6 +16,7 @@ Thumbs.db
 # Models (downloaded at runtime)
 models/
 *.bin
+parakeet-tdt-0.6b-v3/
 
 # Logs
 *.log
