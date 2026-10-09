@@ -1,0 +1,33 @@
+[package]
+name = "bolum"
+version = "0.1.0"
+edition = "2021"
+description = "Voice dictation tool for low-end devices"
+license = "MIT"
+repository = "https://github.com/shivraj598/Bolum"
+
+[dependencies]
+whisper-rs = { version = "0.6", features = ["simd"] }
+cpal = "0.15"
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+tokio = { version = "1.40", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dirs = "5.0"
+hound = "3.5"
+reqwest = { version = "0.12", features = ["json"] }
+futures-util = "0.3"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = true
